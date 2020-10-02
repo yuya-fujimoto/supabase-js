@@ -4,7 +4,7 @@ const isBrowser = () => typeof window !== 'undefined'
 const storageKey = 'supabase.auth.token'
 
 class Auth {
-  constructor(authUrl, supabaseKey, options = { autoRefreshToken: true, persistSession: true }) {
+  constructor(authUrl, supabaseKey, options = { autoRefreshToken: true, persistSession: true, localStorage: localStorage }) {
     this.authUrl = authUrl
     this.accessToken = supabaseKey
     this.refreshToken = null
@@ -12,6 +12,7 @@ class Auth {
     this.currentUser = null
     this.autoRefreshToken = options.autoRefreshToken === undefined ? true : options.autoRefreshToken
     this.persistSession = options.persistSession === undefined ? true : options.persistSession
+    this.localStorage = options.localStorage || localStorage
 
     this.signup = async (email, password) => {
       this.removeSavedSession() // clean out the old session before attempting
@@ -121,18 +122,18 @@ class Auth {
 
     this.saveSession = (accessToken, refreshToken, expiresAt, currentUser) => {
       const data = { accessToken, refreshToken, expiresAt, currentUser }
-      isBrowser() && localStorage.setItem(storageKey, JSON.stringify(data))
+      isBrowser() && this.localStorage.setItem(storageKey, JSON.stringify(data))
     }
 
     this.removeSavedSession = () => {
       this.currentUser = null
       this.refreshToken = null
       this.accessToken = this.supabaseKey
-      isBrowser() && localStorage.removeItem(storageKey)
+      isBrowser() && this.localStorage.removeItem(storageKey)
     }
 
     this.authHeader = () => {
-      let json = isBrowser() && localStorage.getItem(storageKey)
+      let json = isBrowser() && this.localStorage.getItem(storageKey)
       let persisted = json ? JSON.parse(json) : null
       if (persisted?.accessToken) return `Bearer ${persisted.accessToken}`
       else if (this.accessToken) return `Bearer ${this.accessToken}`
@@ -140,7 +141,7 @@ class Auth {
     }
 
     this.recoverSession = () => {
-      const json = isBrowser() && localStorage.getItem(storageKey)
+      const json = isBrowser() && this.localStorage.getItem(storageKey)
       if (json) {
         try {
           const data = JSON.parse(json)

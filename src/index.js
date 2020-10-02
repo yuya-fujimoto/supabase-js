@@ -6,7 +6,7 @@ import { PostgrestClient } from '@supabase/postgrest-js'
 const DEPRICATED_KEY_LENGTH = 45
 
 class SupabaseClient {
-  constructor(supabaseUrl, supabaseKey, options = { autoRefreshToken: true }) {
+  constructor(supabaseUrl, supabaseKey, options = { autoRefreshToken: true, localStorage: localStorage }) {
     this.supabaseUrl = null
     this.supabaseKey = null
     this.restUrl = null
@@ -22,7 +22,7 @@ class SupabaseClient {
 
     this.authenticate(supabaseUrl, supabaseKey)
 
-    this.auth = new Auth(this.authUrl, supabaseKey, { autoRefreshToken: options.autoRefreshToken })
+    this.auth = new Auth(this.authUrl, supabaseKey, { autoRefreshToken: options.autoRefreshToken, localStorage: options.localStorage })
   }
 
   /**
